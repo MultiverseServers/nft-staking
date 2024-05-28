@@ -1,0 +1,18 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+nft_staking = "By8wrsEj5fvMDK1z2QDTSphox858bXBBXzXUPVTHoV6W"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "https://bold-old-snowflake.solana-devnet.quiknode.pro/fb01c0a0fd61fa6ff2092476e9e30c2fb434cb5c/"
+wallet = "/home/pluto/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
