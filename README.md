@@ -1,4 +1,4 @@
-安装Anchor
+安装Anchor,版本使用0.29.0
 https://www.anchor-lang.com/docs/installation
 
 
