@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-nft_staking = "CHPwaCjWbpyLBH8C8GVNaAsGz68AVf7JCWRva71XTAwU"
+nft_staking = "59QokTFcabvywkY3BsnRpvq81rNBhjv7kMVgqAFwQTkt"
 
 [registry]
 url = "https://api.apr.dev"

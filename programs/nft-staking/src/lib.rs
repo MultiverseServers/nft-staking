@@ -5,16 +5,17 @@ use anchor_spl::metadata::mpl_token_metadata::ID as MetadataTokenId;
 use anchor_spl::metadata::mpl_token_metadata::instructions::FreezeDelegatedAccount;
 use anchor_spl::metadata::mpl_token_metadata::instructions::ThawDelegatedAccount;
 use solana_program::program::invoke_signed;
+use std::str::FromStr;
 
-declare_id!("CHPwaCjWbpyLBH8C8GVNaAsGz68AVf7JCWRva71XTAwU");
+declare_id!("59QokTFcabvywkY3BsnRpvq81rNBhjv7kMVgqAFwQTkt");
 
 #[program]
 pub mod nft_staking {
-    use std::str::FromStr;
+
 
     use super::*;
 
-    pub fn stake(ctx: Context<Stake>) -> Result<()> {
+    pub fn stake(ctx: Context<Stake>, stake_days: i16) -> Result<()> {
         // check stake state
         require!(ctx.accounts.stake_state.stake_state == StakeState::Unstaked,
             StakeError::AlreadyStaked
@@ -84,6 +85,7 @@ pub mod nft_staking {
         ctx.accounts.stake_state.user_pubkey = ctx.accounts.user.key();
         ctx.accounts.stake_state.stake_state = StakeState::Staked;
         ctx.accounts.stake_state.stake_start_time = clock.unix_timestamp;
+        ctx.accounts.stake_state.stake_days = stake_days;
 
         msg!("Stake state: {:?}", ctx.accounts.stake_state.stake_state);
 
@@ -91,7 +93,15 @@ pub mod nft_staking {
     }
 
     pub fn unstake(ctx: Context<Unstake>) -> Result<()>{
-        // TODO check unstake time
+        // check unstake time
+        let clock: Clock = Clock::get().unwrap();
+        let difference_in_seconds = clock.unix_timestamp - ctx.accounts.stake_state.stake_start_time;
+        let days_passed = difference_in_seconds / 86400;
+        msg!("days_passed: {:?}", days_passed);
+        require!(days_passed >= ctx.accounts.stake_state.stake_days as i64,
+            StakeError::InvalidStakeState
+        );
+
         msg!("Unstake called");
         // Update state
         ctx.accounts.stake_state.stake_state = StakeState::Unstaked;
@@ -200,6 +210,7 @@ pub struct UserStakeInfo {
     pub stake_start_time: i64,
     pub user_pubkey: Pubkey,
     pub stake_state: StakeState,
+    pub stake_days: i16,
 }
 
 #[derive(Debug, PartialEq, AnchorDeserialize, AnchorSerialize, Clone)]
