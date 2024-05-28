@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { NftStaking } from "../target/types/nft_staking";
 import {
-    MPL_TOKEN_METADATA_PROGRAM_ID,
+    MPL_TOKEN_METADATA_PROGRAM_ID
 } from "@metaplex-foundation/mpl-token-metadata";
 import {
     toWeb3JsPublicKey,
@@ -10,6 +10,9 @@ import {
 import { publicKey } from "@metaplex-foundation/umi";
 import { expect } from "chai";
 import { NftMint, setupNft } from "../utils/setupNft";
+import { PublicKey } from "@solana/web3.js";
+const { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } = require('@solana/spl-token');
+const customEndPoint = "https://bold-old-snowflake.solana-devnet.quiknode.pro/fb01c0a0fd61fa6ff2092476e9e30c2fb434cb5c/";
 
 describe("stake test", () => {
     // Configure the client to use the local cluster.
@@ -18,24 +21,18 @@ describe("stake test", () => {
     const program = anchor.workspace.NftStaking as Program<NftStaking>;
     const wallet = anchor.workspace.NftStaking.provider.wallet;
 
-    const mintAddress = publicKey("9y9GSY23pM2sv5pW5FoQUPYvQdACEQMH5LACpuEkkZum");
-    const owner = publicKey("687sDBgayiTB3MQPqbhEdhh3ZzEmNGKvVLcwaP8YhZGJ");
-    const nftEditionKey = publicKey("6CxJmzf3LPm8TCd3op7CrfE7c82Fb5nagHm5BPkt7jUh");
+    const nftMintAddress = new PublicKey("BsskwqFD2WS6ydDyUJvsh8tp5TeSHsAVBJVurFx7L5hj");
 
-    // We convert the public keys to web3.js format because anchor uses web3.js
-    const nftMintAddress = toWeb3JsPublicKey(mintAddress);
-    const nftAccount = toWeb3JsPublicKey(owner)
-    const nftEdition = toWeb3JsPublicKey(nftEditionKey);
-
-    const [stakeState] = anchor.web3.PublicKey.findProgramAddressSync([wallet.publicKey.toBuffer(), nftAccount.toBuffer()], program.programId);
-    const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync([Buffer.from("authority")], program.programId);
-    const [stakeStatePda] = anchor.web3.PublicKey.findProgramAddressSync(
-        [wallet.payer.publicKey.toBuffer(), nftAccount.toBuffer()],
-        program.programId
-    );
+    const metadataProgramId = toWeb3JsPublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
+    const [nftHolderAccount] = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), TOKEN_PROGRAM_ID.toBuffer(), nftMintAddress.toBuffer()], ASSOCIATED_TOKEN_PROGRAM_ID);
+    const [nftEdition] = PublicKey.findProgramAddressSync([Buffer.from('metadata'),metadataProgramId.toBuffer(),nftMintAddress.toBuffer(),Buffer.from('edition')], metadataProgramId);
+    const [metadataAccount] = PublicKey.findProgramAddressSync([Buffer.from('metadata'), metadataProgramId.toBuffer(),nftMintAddress.toBuffer()], metadataProgramId);
+    const [stakeState] = PublicKey.findProgramAddressSync([wallet.publicKey.toBuffer(), nftHolderAccount.toBuffer()], program.programId);
+    const [programAuthority] = PublicKey.findProgramAddressSync([Buffer.from("authority")], program.programId);
+    const [stakeStatePda] = PublicKey.findProgramAddressSync([wallet.payer.publicKey.toBuffer(), nftHolderAccount.toBuffer()],program.programId);
 
     // it("mint", async () => {
-    //     await setupNft(program, wallet.payer, "https://bold-old-snowflake.solana-devnet.quiknode.pro/fb01c0a0fd61fa6ff2092476e9e30c2fb434cb5c/");
+    //     await setupNft(program, wallet.payer, customEndPoint);
     // });
 
     it("stake", async () => {
@@ -43,16 +40,18 @@ describe("stake test", () => {
         await program.methods
             .stake()
             .accounts({
-                nftTokenAccount: nftAccount,
+                nftTokenAccount: nftHolderAccount,
                 nftMint: nftMintAddress,
                 nftEdition: nftEdition,
                 metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
                 stakeState: stakeState,
                 programAuthority: programAuthority,
+                tokenMetadataAccount: metadataAccount,
             })
             .rpc();
 
         const account = await program.account.userStakeInfo.fetch(stakeStatePda);
+        program.account.userStakeInfo.idlAccount.name;
         console.log("stake status after staking: ", account);
         expect(account.stakeState).to.have.property("staked");
   });
@@ -62,7 +61,7 @@ describe("stake test", () => {
     //     await program.methods
     //     .unstake()
     //     .accounts({
-    //         nftTokenAccount: nftAccount,
+    //         nftTokenAccount: nftHolderAccount,
     //         nftMint: nftMintAddress,
     //         nftEdition: nftEdition,
     //         metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
@@ -70,7 +69,7 @@ describe("stake test", () => {
     //         programAuthority: programAuthority,
     //     })
     //     .rpc();
-    //
+    
     //     const stakeAccount = await program.account.userStakeInfo.fetch(stakeStatePda);
     //     console.log("stake status after unstake: ", stakeAccount);
     // });

@@ -2,14 +2,17 @@ use anchor_lang::prelude::*;
 use anchor_spl::token;
 use anchor_spl::{metadata::Metadata, token::{Mint, Token, TokenAccount, Approve, Revoke}};
 use anchor_spl::metadata::mpl_token_metadata::ID as MetadataTokenId;
+use anchor_spl::metadata::mpl_token_metadata::programs::MPL_TOKEN_METADATA_ID as MetatDataProgramId;
 use anchor_spl::metadata::mpl_token_metadata::instructions::FreezeDelegatedAccount;
 use anchor_spl::metadata::mpl_token_metadata::instructions::ThawDelegatedAccount;
 use solana_program::program::invoke_signed;
 
-declare_id!("By8wrsEj5fvMDK1z2QDTSphox858bXBBXzXUPVTHoV6W");
+declare_id!("CHPwaCjWbpyLBH8C8GVNaAsGz68AVf7JCWRva71XTAwU");
 
 #[program]
 pub mod nft_staking {
+    use std::str::FromStr;
+
     use super::*;
 
     pub fn stake(ctx: Context<Stake>) -> Result<()> {
@@ -17,8 +20,25 @@ pub mod nft_staking {
         require!(ctx.accounts.stake_state.stake_state == StakeState::Unstaked,
             StakeError::AlreadyStaked
         );
-        // TODO check is right collection
 
+        // check metadata account
+        // let nft_mint = ctx.accounts.nft_mint.key();
+        // let metadata_seed = &["metadata".as_bytes(), 
+        // ctx.accounts.metadata_program.key.as_ref(), 
+        // nft_mint.as_ref()];
+        // let (metadata_derived_key, _bump_seed) = Pubkey::find_program_address(metadata_seed, ctx.accounts.metadata_program.key);
+        // require!(metadata_derived_key == ctx.accounts.token_metadata_account.key(),
+        // StakeError::UninitializedAccount);
+
+
+        // check is right collection
+        let expectecd_creator = Pubkey::from_str("Xfxh5Gd7DCABKJuHPkCe7yNDrT5iXpeSt48LTCC1kcG").unwrap();
+        let metadata = mpl_token_metadata::accounts::Metadata::try_from(&ctx.accounts.token_metadata_account).unwrap();
+        let creators = metadata.creators.as_ref().unwrap();
+        
+        require!(creators[0].address == expectecd_creator,
+            StakeError::InvalidCollection
+        );
 
         msg!("Stake called");
         // get now time
@@ -140,6 +160,8 @@ pub struct Stake<'info>{
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub metadata_program: Program<'info, Metadata>,
+    /// CHECK: Manual validation
+    pub token_metadata_account: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -195,4 +217,6 @@ pub enum StakeError{
     UninitializedAccount,
     #[msg("Stake state is invalid")]
     InvalidStakeState,
+    #[msg("Collection is invalid")]
+    InvalidCollection,
 }
