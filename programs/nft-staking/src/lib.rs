@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use anchor_spl::token;
 use anchor_spl::{metadata::Metadata, token::{Mint, Token, TokenAccount, Approve, Revoke}};
 use anchor_spl::metadata::mpl_token_metadata::ID as MetadataTokenId;
-use anchor_spl::metadata::mpl_token_metadata::programs::MPL_TOKEN_METADATA_ID as MetatDataProgramId;
 use anchor_spl::metadata::mpl_token_metadata::instructions::FreezeDelegatedAccount;
 use anchor_spl::metadata::mpl_token_metadata::instructions::ThawDelegatedAccount;
 use solana_program::program::invoke_signed;
