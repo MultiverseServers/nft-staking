@@ -11,8 +11,6 @@ declare_id!("59QokTFcabvywkY3BsnRpvq81rNBhjv7kMVgqAFwQTkt");
 
 #[program]
 pub mod nft_staking {
-
-
     use super::*;
 
     pub fn stake(ctx: Context<Stake>, stake_days: i16) -> Result<()> {
@@ -87,6 +85,12 @@ pub mod nft_staking {
         ctx.accounts.stake_state.stake_start_time = clock.unix_timestamp;
         ctx.accounts.stake_state.stake_days = stake_days;
 
+        emit!(StakeEvent {
+            nft_mint: ctx.accounts.nft_mint.key(),
+            stake_start_time: clock.unix_timestamp,
+            stake_days: stake_days,
+        });
+
         msg!("Stake state: {:?}", ctx.accounts.stake_state.stake_state);
 
         Ok(())
@@ -137,8 +141,17 @@ pub mod nft_staking {
         let cpi_revoke_ctx = CpiContext::new(cpi_revoke_program, cpi_revoke_accounts);
         token::revoke(cpi_revoke_ctx)?;
 
+        emit!(UnstakeEvent {
+            nft_mint: ctx.accounts.nft_mint.key(),
+        });
+
         Ok(())
     }
+
+    // pub fn renewal(ctx: Context<Renewal>, stake_days: i16) -> Result<()>{
+    //     // check can renewal
+    //     Ok(())
+    // }
 }
 
 #[derive(Accounts)]
@@ -203,6 +216,25 @@ pub struct Unstake<'info>{
     pub metadata_program: Program<'info, Metadata>,
 }
 
+// #[derive(Accounts)]
+// pub struct Renewal<'info>{
+//     #[account(mut)]
+//     pub user: Signer<'info>,
+//     #[account(
+//         mut,
+//         token::authority=user
+//     )]
+//     pub nft_token_account: Account<'info, TokenAccount>,
+//     #[account(
+//         mut,
+//         seeds = [user.key().as_ref(), nft_token_account.key().as_ref()],
+//         bump,
+//         constraint = *user.key == stake_state.user_pubkey,
+//         constraint = nft_token_account.key() == stake_state.token_account
+//     )]
+//     pub stake_state: Account<'info, UserStakeInfo>,
+// }
+
 // Accounts
 #[account]
 pub struct UserStakeInfo {
@@ -229,4 +261,16 @@ pub enum StakeError{
     InvalidStakeState,
     #[msg("Collection is invalid")]
     InvalidCollection,
+}
+
+#[event]
+pub struct StakeEvent {
+    nft_mint: Pubkey,
+    stake_start_time: i64,
+    stake_days: i16
+}
+
+#[event]
+pub struct UnstakeEvent {
+    nft_mint: Pubkey,
 }

@@ -163,6 +163,38 @@
       }
     }
   ],
+  "events": [
+    {
+      "name": "StakeEvent",
+      "fields": [
+        {
+          "name": "nftMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "stakeStartTime",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "stakeDays",
+          "type": "i16",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UnstakeEvent",
+      "fields": [
+        {
+          "name": "nftMint",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,

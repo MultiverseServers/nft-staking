@@ -38,15 +38,17 @@ describe("stake test", () => {
     it("stake", async () => {
         console.log("Initialising stakes");
         await program.methods
-        .stake(1)
+        .stake(0)
         .accounts({
             nftTokenAccount: nftHolderAccount,
             nftMint: nftMintAddress,
             nftEdition: nftEdition,
-            metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
             stakeState: stakeState,
             programAuthority: programAuthority,
             tokenMetadataAccount: metadataAccount,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
         })
         .rpc();
 
