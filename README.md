@@ -17,7 +17,7 @@ https://www.anchor-lang.com/docs/installation
 
 取消it("mint")的注释，为自己的钱包中创建一个NFT，控制台中会log出NFT相关地址
 
-修改nft-staking文件中mintAddress、owner、nftEditionKey为自己NFT地址
+修改nft-staking文件中mintAddress为自己NFT地址
 
 取消it("stake")的注释，进行质押测试
 
