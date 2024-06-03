@@ -168,6 +168,11 @@
       "name": "StakeEvent",
       "fields": [
         {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "nftMint",
           "type": "publicKey",
           "index": false

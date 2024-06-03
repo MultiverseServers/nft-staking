@@ -86,6 +86,7 @@ pub mod nft_staking {
         ctx.accounts.stake_state.stake_days = stake_days;
 
         emit!(StakeEvent {
+            user: ctx.accounts.user.key(),
             nft_mint: ctx.accounts.nft_mint.key(),
             stake_start_time: clock.unix_timestamp,
             stake_days: stake_days,
@@ -265,6 +266,7 @@ pub enum StakeError{
 
 #[event]
 pub struct StakeEvent {
+    user: Pubkey,
     nft_mint: Pubkey,
     stake_start_time: i64,
     stake_days: i16

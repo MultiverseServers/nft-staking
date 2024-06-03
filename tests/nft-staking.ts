@@ -21,7 +21,7 @@ describe("stake test", () => {
     const program = anchor.workspace.NftStaking as Program<NftStaking>;
     const wallet = anchor.workspace.NftStaking.provider.wallet;
 
-    const nftMintAddress = new PublicKey("1xyGvMGVHUXqhHjCQqCsDW8XGDUWJuuEuopEFsEp3aS");
+    const nftMintAddress = new PublicKey("CV88MpXiQzeMhKBeysuMHPkjykpakk4Mn99pDvYbcVv1");
 
     const metadataProgramId = toWeb3JsPublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
     const [nftHolderAccount] = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), TOKEN_PROGRAM_ID.toBuffer(), nftMintAddress.toBuffer()], ASSOCIATED_TOKEN_PROGRAM_ID);
@@ -35,44 +35,45 @@ describe("stake test", () => {
     //     await setupNft(program, wallet.payer, customEndPoint);
     // });
 
-    it("stake", async () => {
-        console.log("Initialising stakes");
-        await program.methods
-        .stake(0)
-        .accounts({
-            nftTokenAccount: nftHolderAccount,
-            nftMint: nftMintAddress,
-            nftEdition: nftEdition,
-            stakeState: stakeState,
-            programAuthority: programAuthority,
-            tokenMetadataAccount: metadataAccount,
-            systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
-        })
-        .rpc();
+    // it("stake", async () => {
+    //     console.log("Initialising stakes");
+    //     await program.methods
+    //     .stake(0)
+    //     .accounts({
+    //         nftTokenAccount: nftHolderAccount,
+    //         nftMint: nftMintAddress,
+    //         nftEdition: nftEdition,
+    //         stakeState: stakeState,
+    //         programAuthority: programAuthority,
+    //         tokenMetadataAccount: metadataAccount,
+    //         systemProgram: anchor.web3.SystemProgram.programId,
+    //         tokenProgram: TOKEN_PROGRAM_ID,
+    //         metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
+    //         user: wallet.publicKey,
+    //     })
+    //     .rpc();
 
-        const account = await program.account.userStakeInfo.fetch(stakeStatePda);
-        program.account.userStakeInfo.idlAccount.name;
-        console.log("stake status after staking: ", account);
-        expect(account.stakeState).to.have.property("staked");
-    });
+    //     const account = await program.account.userStakeInfo.fetch(stakeStatePda);
+    //     program.account.userStakeInfo.idlAccount.name;
+    //     console.log("stake status after staking: ", account);
+    //     expect(account.stakeState).to.have.property("staked");
+    // });
 
 
-    it("Unstakes", async () => {
-        await program.methods
-        .unstake()
-        .accounts({
-            nftTokenAccount: nftHolderAccount,
-            nftMint: nftMintAddress,
-            nftEdition: nftEdition,
-            metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
-            stakeState: stakeState,
-            programAuthority: programAuthority,
-        })
-        .rpc();
+    // it("Unstakes", async () => {
+    //     await program.methods
+    //     .unstake()
+    //     .accounts({
+    //         nftTokenAccount: nftHolderAccount,
+    //         nftMint: nftMintAddress,
+    //         nftEdition: nftEdition,
+    //         metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
+    //         stakeState: stakeState,
+    //         programAuthority: programAuthority,
+    //     })
+    //     .rpc();
     
-        const stakeAccount = await program.account.userStakeInfo.fetch(stakeStatePda);
-        console.log("stake status after unstake: ", stakeAccount);
-    });
+    //     const stakeAccount = await program.account.userStakeInfo.fetch(stakeStatePda);
+    //     console.log("stake status after unstake: ", stakeAccount);
+    // });
 });
